@@ -47,3 +47,7 @@ remove_student_grades.*
 
 # Ignore zip files
 *.tar.gz
+
+# custom
+venv
+.vscode
