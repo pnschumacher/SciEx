@@ -2,10 +2,12 @@
 set -eu  # Crash if variable used without being set
 
 # Setting environment
-source /home/tdinh/.bashrc
-conda activate py39
-. .llava/bin/activate
-which python
+# source /home/tdinh/.bashrc
+# conda activate py39
+# . .llava/bin/activate
+# which python
+
+source venv/bin/activate
 
 SERVER_TYPE=$1
 LLM_NAME=$2

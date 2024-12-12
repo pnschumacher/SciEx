@@ -7,7 +7,7 @@ import io
 import re
 
 
-LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini']
+LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini', 'llama-3.1', 'llama-3.3']
 EXAM_LIST = [
     {"exam_name": "nlp_march_2023", "lang": ["en", "de"]},
     {"exam_name": "dl4cv2_feb_2024", "lang": ["en", "de"]},
