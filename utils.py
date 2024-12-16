@@ -445,21 +445,3 @@ def get_or_create_index(args):
         storage_context.persist(persist_dir=args.course_material_db_path)
     
     return index
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
