@@ -1,8 +1,10 @@
 import json
 import os
-from utils import prompt_prefix, load_json, write_text_file, info_from_exam_path, process_images
+from utils import prompt_prefix, load_json, write_text_file, info_from_exam_path, process_images, get_or_create_index
 import argparse
+
 from llm_clients import OpenAIClient, ClaudeClient, HFTextGenClient, HFLlava
+from llama_index.core.indices.vector_store.retrievers import VectorIndexRetriever
 
 
 def main():
@@ -11,9 +13,17 @@ def main():
     parser.add_argument("--server-url", default="openai")
     parser.add_argument("--llm-name-full", default="gpt-3.5-turbo-0125")
     parser.add_argument("--llm-name", default='gpt35')
+    parser.add_argument("--use_course_material", default=False)
+    parser.add_argument("--course_material_path", default=None)
+    parser.add_argument("--embedding_model", default="BAAI/bge-large-en")
+    parser.add_argument("--course_material_db_path", default=None)
     parser.add_argument("--exam-json-path")
     args = parser.parse_args()
 
+    index = None
+    if args.use_course_material:
+        index = get_or_create_index(args)
+    
     if args.server_type == 'openai':
         llm_client = OpenAIClient(model=args.llm_name_full, server_url=args.server_url, seed=0)
     elif args.server_type == 'claude':
@@ -35,13 +45,42 @@ def main():
 
     os.makedirs(out_dir, exist_ok=True)
 
-    prompt = prompt_prefix(lang)
+    retriever = None
+    if args.use_course_material and index:
+        retriever = VectorIndexRetriever(index=index, similarity_top_k=10)
+
+    prompt = prompt_prefix(lang=lang, use_course_material=args.use_course_material)
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
 
     exam_out = ''
     for question in exam['Questions']:
         question_id = question.pop("Index")
         print(question)
+
+        if retriever:
+            question_content = question.get("Description", "")
+            sub_questions = question.get("Subquestions", [])
+            if sub_questions:
+                for sub_question in sub_questions:
+                    sub_content = sub_question.get("Content", "")
+                    if sub_content:  
+                        question_content += "\n" + sub_content
+                
+            related = retriever.retrieve(question_content)
+            text_nodes = [node_with_score.node for node_with_score in related]
+
+            context = [
+                {
+                    "Text": text_node.text, 
+                    "Metadata": {
+                        "Page": text_node.metadata["page_label"], 
+                        "Filename": text_node.metadata["file_name"],
+                    },
+                } 
+                for text_node in text_nodes
+            ]
+
+            question = {"Context": context, **question}
 
         out = llm_client.send_request(
             prompt,
@@ -61,3 +100,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

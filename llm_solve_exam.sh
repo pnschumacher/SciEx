@@ -27,6 +27,18 @@ fi
 if [ -z ${SERVER_URL} ]; then
   SERVER_URL="http://i13hpc65:8080"  # Local mixtral lamma.cpp
 fi
+if [ -z ${USE_COURSE_MATERIAL} ]; then
+  USE_COURSE_MATERIAL=0 
+fi
+if [ -z ${COURSE_MATERIAL_PATH} ]; then
+  COURSE_MATERIAL_PATH="" 
+fi
+if [ -z ${EMBEDDING_MODEL} ]; then
+  EMBEDDING_MODEL="BAAI/bge-large-en"
+fi
+if [ -z ${COURSE_MATERIAL_DB_PATH} ]; then
+  COURSE_MATERIAL_DB_PATH=""
+fi
 
 # Loop through each JSON file in the current directory and its subdirectories
 for file in $(find exams_json/ -type f -name '*.json'); do
@@ -41,6 +53,10 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --server-url ${SERVER_URL} \
     --llm-name-full ${LLM_NAME_FULL} \
     --llm-name ${LLM_NAME} \
+    --use_course_material ${USE_COURSE_MATERIAL} \
+    --course_material_path ${COURSE_MATERIAL_PATH} \
+    --embedding_model ${EMBEDDING_MODEL} \
+    --course_material_db_path ${COURSE_MATERIAL_DB_PATH} \
     --exam-json-path ${file}
 
   echo "---------------------------------------------------------"

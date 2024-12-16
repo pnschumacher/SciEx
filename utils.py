@@ -1,10 +1,16 @@
 import json
 import os
 from PIL import Image, ImageDraw, ImageFont
+import chromadb
 import fitz  # PyMuPDF, imported as fitz for backward compatibility reasons
 import base64
 import io
 import re
+
+from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex
+from llama_index.core.node_parser.text.sentence import SentenceSplitter
+from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
 LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini', 'llama-3.1', 'llama-3.3']
@@ -127,20 +133,37 @@ def grading_prompt_prefix(lang, shots=[], with_ref=False, stack_figures=False):
     return prompt
 
 
-def prompt_prefix(lang, stack_figures=False):
+def prompt_prefix(lang, stack_figures=False, use_course_material=False):
     """
     :param lang: 'en' or 'de'
     :return: prompt prefix as a string
     """
+
+    extra_message = ''
     if stack_figures:
         if lang == 'en':
-            extra_message = "Note that the single input figure could contain multiple figures stacked vertically. "
+            extra_message += "Note that the single input figure could contain multiple figures stacked vertically. "
         elif lang == 'de':
-            extra_message = "Beachten Sie, dass die einzelne Eingabe Figur mehrere vertikal gestapelte Figuren enthalten kann. "
+            extra_message += "Beachten Sie, dass die einzelne Eingabe Figur mehrere vertikal gestapelte Figuren enthalten kann. "
         else:
             raise RuntimeError(f"No prompt for lang {lang}")
-    else:
-        extra_message = ""
+    
+    if use_course_material:
+        if lang == 'en':
+            extra_message += "Additionally, you will be provided by some course material (can be found in 'Context'). " \
+                "You can use that additional context to answer the question if it is helpful and related to it. " \
+                "If not, you don't have to use it. " \
+                "If you used the context, always finish your answer with: 'I used the following context: <explain here what context you used>'. " \
+                "If you did not use the context, always finish your answer with: 'I did not use the context.' " 
+        elif lang == 'de':
+            extra_message += "Zusätzlich wird Ihnen Kursmaterial zur Verfügung gestellt (zu finden unter 'Context'). " \
+                "Sie können diesen zusätzlichen Kontext zur Beantwortung der Frage nutzen, wenn er hilfreich ist und einen Bezug zur Frage hat. " \
+                "Wenn nicht, müssen Sie ihn nicht verwenden. " \
+                "Wenn Sie den Kontext verwendet haben, beenden Sie Ihre Antwort immer mit: 'Ich habe den folgenden Kontext verwendet: <Erläutern Sie hier, welchen Kontext Sie verwendet haben>'. " \
+                "Wenn Sie den Kontext nicht verwendet haben, beenden Sie Ihre Antwort immer mit: 'Ich habe den Kontext nicht verwendet.' "
+        else:
+            raise RuntimeError(f"No prompt for lang {lang}")
+        
     if lang == 'en':
         prompt = "You are a university student. Please answer the following JSON-formatted exam question. " \
                  "The subquestions (if any) are indexed. " \
@@ -360,3 +383,83 @@ def remove_key(d, key):
     new_d = d.copy()
     new_d.pop(key)
     return new_d
+
+
+def get_or_create_index(args):
+    if os.path.exists(args.course_material_db_path):
+        print("Loading existing index...")
+        storage_context = StorageContext.from_defaults(persist_dir=args.course_material_db_path)
+        index = VectorStoreIndex(storage_context=storage_context)
+        
+        print("Index loaded successfully.")
+        
+    else:
+        print("Creating new index...")
+        
+        embed_model = HuggingFaceEmbedding(model_name=args.embed_model)
+        
+        exam_name, _ = info_from_exam_path(args.exam_json_path)
+        chroma_client = chromadb.PersistentClient()
+        chroma_collection = chroma_client.create_collection(exam_name)
+        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+
+        if not os.path.exists(args.course_material_path):
+            raise FileNotFoundError(f"Course material path {args.course_material_path} does not exist.")
+
+        slide_directory = f"{args.course_material_path}/{exam_name}/Slides"
+        transcript_directory = f"{args.course_material_path}/{exam_name}/Transcripts"
+
+        slide_nodes = []
+        transcript_nodes = []
+
+        if os.path.exists(slide_directory):
+            slide_documents = SimpleDirectoryReader(slide_directory).load_data()
+            
+            slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
+            date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
+            date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
+
+            for doc in slide_documents:
+                doc.text = re.sub(slide_prefix_pattern, "", doc.text)
+                doc.text = re.sub(date_slide_pattern_en, "", doc.text)
+                doc.text = re.sub(date_slide_pattern_de, "", doc.text)
+
+            slide_splitter = SentenceSplitter(chunk_size=10000, chunk_overlap=0)
+            slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_documents)
+                
+        if os.path.exists(transcript_directory):
+            transcript_documents = SimpleDirectoryReader(transcript_directory).load_data()
+
+            text_splitter = SentenceSplitter(chunk_size=200, chunk_overlap=10)
+            transcript_nodes = text_splitter.get_nodes_from_documents(documents=transcript_documents)
+
+        nodes = slide_nodes + transcript_nodes
+
+        if not nodes:
+            print("No nodes were created")
+            return
+
+        storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+        index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
+        storage_context.persist(persist_dir=args.course_material_db_path)
+    
+    return index
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
