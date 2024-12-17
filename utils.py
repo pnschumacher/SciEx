@@ -153,15 +153,11 @@ def prompt_prefix(lang, stack_figures=False, use_course_material=False):
         if lang == 'en':
             extra_message += "Additionally, you will be provided with some course materials (can be found in 'Context'). " \
                 "You can use that additional context to answer the question if it is helpful. " \
-                "If it is not helpful, you don't have to use it. " \
-                "If you used the context, always finish your answer with: 'I used the context'. " \
-                "If you did not use the context, always finish your answer with: 'I did not use the context.' " 
+                "If it is not helpful, you don't have to use it. " 
         elif lang == 'de':
             extra_message += "Zusätzlich wird Ihnen Kursmaterial zur Verfügung gestellt (zu finden unter 'Context'). " \
                 "Sie können diesen zusätzlichen Kontext zur Beantwortung der Frage nutzen, wenn er hilfreich ist und einen Bezug zur Frage hat. " \
-                "Wenn nicht, müssen Sie ihn nicht verwenden. " \
-                "Wenn Sie den Kontext verwendet haben, beenden Sie Ihre Antwort immer mit: 'Ich habe den Kontext verwendet. " \
-                "Wenn Sie den Kontext nicht verwendet haben, beenden Sie Ihre Antwort immer mit: 'Ich habe den Kontext nicht verwendet.' "
+                "Wenn nicht, müssen Sie ihn nicht verwenden. " 
         else:
             raise RuntimeError(f"No prompt for lang {lang}")
         
