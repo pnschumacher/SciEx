@@ -401,7 +401,7 @@ def get_or_create_index(args):
         
         embed_model = HuggingFaceEmbedding(model_name=args.embedding_model)
     
-        chroma_client = chromadb.PersistentClient()
+        chroma_client = chromadb.EphemeralClient()
         chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 
