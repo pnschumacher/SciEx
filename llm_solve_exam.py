@@ -59,6 +59,7 @@ def main():
     exam_out = ''
     for question in exam['Questions']:
         question_id = question.pop("Index")
+        print(question)
 
         if retriever:
             question_content = question.get("Description", "")
@@ -85,7 +86,6 @@ def main():
 
             question = {"Context": context, **question}
 
-        print(question)
         out = llm_client.send_request(
             prompt,
             input_body=json.dumps(question),
