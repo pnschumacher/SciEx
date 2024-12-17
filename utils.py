@@ -8,7 +8,7 @@ import base64
 import io
 import re
 
-from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex
+from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex, load_index_from_storage
 from llama_index.core.node_parser.text.sentence import SentenceSplitter
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
@@ -392,7 +392,7 @@ def get_or_create_index(args):
     if os.path.exists(f"{args.course_material_db_path}/{exam_name}_{lang}"):
         print("Loading existing index...")
         storage_context = StorageContext.from_defaults(persist_dir=f"{args.course_material_db_path}/{exam_name}_{lang}")
-        index = VectorStoreIndex(storage_context=storage_context)
+        index = load_index_from_storage(storage_context=storage_context)
         
         print("Index loaded successfully.")
         
