@@ -1,6 +1,6 @@
 import json
 import os
-from utils import prompt_prefix, load_json, write_text_file, info_from_exam_path, process_images, get_or_create_index
+from utils import prompt_prefix, load_json, stringToBool, write_text_file, info_from_exam_path, process_images, get_or_create_index
 import argparse
 
 from llm_clients import OpenAIClient, ClaudeClient, HFTextGenClient, HFLlava
@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--server-url", default="openai")
     parser.add_argument("--llm-name-full", default="gpt-3.5-turbo-0125")
     parser.add_argument("--llm-name", default='gpt35')
-    parser.add_argument("--use_course_material", default=False)
+    parser.add_argument("--use_course_material", type=stringToBool, default=False)
     parser.add_argument("--course_material_path", default=None)
     parser.add_argument("--embedding_model", default="BAAI/bge-large-en")
     parser.add_argument("--course_material_db_path", default=None)

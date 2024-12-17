@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 from PIL import Image, ImageDraw, ImageFont
@@ -445,3 +446,13 @@ def get_or_create_index(args):
         storage_context.persist(persist_dir=args.course_material_db_path)
     
     return index
+
+
+def stringToBool(value):
+    if isinstance(value, bool):
+        return value
+    if value.lower() in ("true", "yes", "1"):
+        return True
+    elif value.lower() in ("false", "no", "0"):
+        return False
+    raise argparse.ArgumentTypeError("Boolean value expected.")

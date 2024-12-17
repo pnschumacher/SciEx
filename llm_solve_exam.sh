@@ -32,7 +32,7 @@ if [ -z ${SERVER_URL} ]; then
   SERVER_URL="http://i13hpc65:8080"  # Local mixtral lamma.cpp
 fi
 if [ -z ${USE_COURSE_MATERIAL} ]; then
-  USE_COURSE_MATERIAL=0 
+  USE_COURSE_MATERIAL="false" 
 fi
 if [ -z ${COURSE_MATERIAL_PATH} ]; then
   COURSE_MATERIAL_PATH="" 
