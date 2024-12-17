@@ -36,7 +36,11 @@ def main():
         raise RuntimeError(f"server_type {args.server_type} not implemented.")
 
     exam_name, lang = info_from_exam_path(args.exam_json_path)
-    out_dir = f"llm_out/{exam_name}"
+
+    if args.use_course_material:
+        out_dir = f"llm_out_cm/{exam_name}"
+    else:
+        out_dir = f"llm_out/{exam_name}"
     out_path = f"{out_dir}/{exam_name}_{lang}_{args.llm_name}.txt"
 
     if os.path.isfile(out_path):
