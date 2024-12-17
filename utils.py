@@ -387,9 +387,11 @@ def remove_key(d, key):
 
 
 def get_or_create_index(args):
+    exam_name, lang = info_from_exam_path(args.exam_json_path)
+
     if os.path.exists(args.course_material_db_path):
         print("Loading existing index...")
-        storage_context = StorageContext.from_defaults(persist_dir=args.course_material_db_path)
+        storage_context = StorageContext.from_defaults(persist_dir=f"{args.course_material_db_path}/{exam_name}_{lang}")
         index = VectorStoreIndex(storage_context=storage_context)
         
         print("Index loaded successfully.")
@@ -398,17 +400,16 @@ def get_or_create_index(args):
         print("Creating new index...")
         
         embed_model = HuggingFaceEmbedding(model_name=args.embed_model)
-        
-        exam_name, _ = info_from_exam_path(args.exam_json_path)
+    
         chroma_client = chromadb.PersistentClient()
-        chroma_collection = chroma_client.create_collection(exam_name)
+        chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 
         if not os.path.exists(args.course_material_path):
             raise FileNotFoundError(f"Course material path {args.course_material_path} does not exist.")
 
-        slide_directory = f"{args.course_material_path}/{exam_name}/Slides"
-        transcript_directory = f"{args.course_material_path}/{exam_name}/Transcripts"
+        slide_directory = f"{args.course_material_path}/{exam_name}_{lang}/Slides"
+        transcript_directory = f"{args.course_material_path}/{exam_name}_{lang}/Transcripts"
 
         slide_nodes = []
         transcript_nodes = []
@@ -443,7 +444,7 @@ def get_or_create_index(args):
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
         index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
-        storage_context.persist(persist_dir=args.course_material_db_path)
+        storage_context.persist(persist_dir=f"{args.course_material_db_path}/{exam_name}_{lang}")
     
     return index
 
