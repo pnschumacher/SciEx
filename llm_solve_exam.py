@@ -73,8 +73,8 @@ def main():
                 {
                     "Text": text_node.text, 
                     "Metadata": {
-                        "Page": text_node.metadata["page_label"], 
-                        "Filename": text_node.metadata["file_name"],
+                        "Page": text_node.metadata.get("page_label"), 
+                        "Filename": text_node.metadata.get("file_name"),
                     },
                 } 
                 for text_node in text_nodes
