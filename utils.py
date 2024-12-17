@@ -389,7 +389,7 @@ def remove_key(d, key):
 def get_or_create_index(args):
     exam_name, lang = info_from_exam_path(args.exam_json_path)
 
-    if os.path.exists(args.course_material_db_path):
+    if os.path.exists(f"{args.course_material_db_path}/{exam_name}_{lang}"):
         print("Loading existing index...")
         storage_context = StorageContext.from_defaults(persist_dir=f"{args.course_material_db_path}/{exam_name}_{lang}")
         index = VectorStoreIndex(storage_context=storage_context)
