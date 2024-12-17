@@ -151,9 +151,9 @@ def prompt_prefix(lang, stack_figures=False, use_course_material=False):
     
     if use_course_material:
         if lang == 'en':
-            extra_message += "Additionally, you will be provided by some course material (can be found in 'Context'). " \
-                "You can use that additional context to answer the question if it is helpful and related to it. " \
-                "If not, you don't have to use it. " \
+            extra_message += "Additionally, you will be provided with some course materials (can be found in 'Context'). " \
+                "You can use that additional context to answer the question if it is helpful. " \
+                "If it is not helpful, you don't have to use it. " \
                 "If you used the context, always finish your answer with: 'I used the following context: <explain here what context you used>'. " \
                 "If you did not use the context, always finish your answer with: 'I did not use the context.' " 
         elif lang == 'de':
@@ -405,8 +405,8 @@ def get_or_create_index(args):
         chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 
-        if not os.path.exists(args.course_material_path):
-            raise FileNotFoundError(f"Course material path {args.course_material_path} does not exist.")
+        if not os.path.exists(f"{args.course_material_path}/{exam_name}_{lang}"):
+            raise FileNotFoundError(f"Course material path {args.course_material_path}/{exam_name}_{lang} does not exist.")
 
         slide_directory = f"{args.course_material_path}/{exam_name}_{lang}/Slides"
         transcript_directory = f"{args.course_material_path}/{exam_name}_{lang}/Transcripts"
@@ -417,6 +417,7 @@ def get_or_create_index(args):
         if os.path.exists(slide_directory):
             slide_documents = SimpleDirectoryReader(slide_directory).load_data()
             
+            # TODO: Do not hardcode this on NLP exams
             slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
             date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
             date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
@@ -426,6 +427,7 @@ def get_or_create_index(args):
                 doc.text = re.sub(date_slide_pattern_en, "", doc.text)
                 doc.text = re.sub(date_slide_pattern_de, "", doc.text)
 
+            # This ensures that each node is a separate slide
             slide_splitter = SentenceSplitter(chunk_size=10000, chunk_overlap=0)
             slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_documents)
                 
