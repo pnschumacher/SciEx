@@ -399,7 +399,7 @@ def get_or_create_index(args):
     else:
         print("Creating new index...")
         
-        embed_model = HuggingFaceEmbedding(model_name=args.embed_model)
+        embed_model = HuggingFaceEmbedding(model_name=args.embedding_model)
     
         chroma_client = chromadb.PersistentClient()
         chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
