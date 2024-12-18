@@ -387,8 +387,8 @@ def get_or_create_index(args):
 
     if os.path.exists(f"{args.course_material_db_path}/{exam_name}_{lang}"):
         print("Loading existing index...")
-        storage_context = StorageContext.from_defaults(persist_dir=f"{args.course_material_db_path}/{exam_name}_{lang}")
-        index = load_index_from_storage(storage_context=storage_context)
+        vector_store = ChromaVectorStore(persist_directory=f"{args.course_material_db_path}/{exam_name}_{lang}")
+        index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
         
         print("Index loaded successfully.")
         
