@@ -14,7 +14,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
-LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini', 'llama-3.1', 'llama-3.3', 'llama-3.3_cm']
+LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini', 'llama-3.1', 'llama-3.3', 'llama-3.3_cm', 'llama-3.1_cm']
 EXAM_LIST = [
     {"exam_name": "nlp_march_2023", "lang": ["en", "de"]},
     {"exam_name": "dl4cv2_feb_2024", "lang": ["en", "de"]},
