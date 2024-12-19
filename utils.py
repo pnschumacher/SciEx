@@ -10,6 +10,7 @@ import re
 
 from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex, load_index_from_storage
 from llama_index.core.node_parser.text.sentence import SentenceSplitter
+from llama_index.core.storage.index_store import SimpleIndexStore
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
@@ -389,13 +390,11 @@ def remove_key(d, key):
 def get_or_create_index(args):
     exam_name, lang = info_from_exam_path(args.exam_json_path)
     persist_dir = f"{args.course_material_db_path}/{exam_name}_{lang}"
-    chroma_client = chromadb.PersistentClient(persist_dir)
 
-    if f"{exam_name}_{lang}" in [col.name for col in chroma_client.list_collections()]:
+    if os.path.exists(persist_dir):
         print("Loading existing index...")
-        collection = chroma_client.get_collection(f"{exam_name}_{lang}")
         storage_context = StorageContext.from_defaults(
-            vector_store=ChromaVectorStore.from_collection(collection=collection)
+            index_store=SimpleIndexStore.from_persist_dir(persist_dir)
         )
 
         index = load_index_from_storage(storage_context)
@@ -406,6 +405,7 @@ def get_or_create_index(args):
         
         embed_model = HuggingFaceEmbedding(model_name=args.embedding_model)
     
+        chroma_client = chromadb.EphemeralClient()
         chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 
@@ -450,6 +450,7 @@ def get_or_create_index(args):
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
         index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
+        storage_context.persist(persist_dir=persist_dir)
     
     return index
 
