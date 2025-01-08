@@ -51,3 +51,4 @@ remove_student_grades.*
 # custom
 venv
 .vscode
+llm_out_cm/*
