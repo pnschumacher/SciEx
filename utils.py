@@ -154,9 +154,7 @@ def prompt_prefix(lang, stack_figures=False, use_course_material=False):
         if lang == 'en':
             extra_message += "Additionally, you will be provided with some course materials (can be found in 'Context'). " \
                 "You can use that additional context to answer the question if it is helpful. " \
-                "If it is not helpful, you don't have to use it. " \
-                "If you used the context, always finish your answer with: 'I used the following context: <context you used with metadata>'. " \
-                "If you did not use the context, always finish your answer with: 'I did not use the context.' " 
+                "If it is not helpful, you don't have to use it. " 
         elif lang == 'de':
             extra_message += "Zusätzlich wird Ihnen Kursmaterial zur Verfügung gestellt (zu finden unter 'Context'). " \
                 "Sie können diesen zusätzlichen Kontext zur Beantwortung der Frage nutzen, wenn er hilfreich ist und einen Bezug zur Frage hat. " \
@@ -385,71 +383,58 @@ def remove_key(d, key):
     return new_d
 
 
-def get_or_create_index(args):
-    exam_name, lang = info_from_exam_path(args.exam_json_path)
-    persist_dir = f"{args.course_material_db_path}/{exam_name}_{lang}"
+def get_index(exam_json_path, embedding_model_name, course_material_path):
+    exam_name, lang = info_from_exam_path(exam_json_path)
 
-    if os.path.exists(persist_dir):
-        print("Loading existing index...")
-        storage_context = StorageContext.from_defaults(
-            index_store=SimpleIndexStore.from_persist_dir(persist_dir)
-        )
-
-        index = load_index_from_storage(storage_context)
-        print("Index loaded successfully.")
-        
-    else:
-        print("Creating new index...")
-        
-        embed_model = HuggingFaceEmbedding(model_name=args.embedding_model)
+    print("Creating new index...")
     
-        chroma_client = chromadb.EphemeralClient()
-        chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
-        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
 
-        if not os.path.exists(f"{args.course_material_path}/{exam_name}_{lang}"):
-            raise FileNotFoundError(f"Course material path {args.course_material_path}/{exam_name}_{lang} does not exist.")
+    chroma_client = chromadb.EphemeralClient()
+    chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 
-        slide_directory = f"{args.course_material_path}/{exam_name}_{lang}/Slides"
-        transcript_directory = f"{args.course_material_path}/{exam_name}_{lang}/Transcripts"
+    if not os.path.exists(f"{course_material_path}/{exam_name}_{lang}"):
+        raise FileNotFoundError(f"Course material path {course_material_path}/{exam_name}_{lang} does not exist.")
 
-        slide_nodes = []
-        transcript_nodes = []
+    slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"
+    transcript_directory = f"{course_material_path}/{exam_name}_{lang}/transcripts"
 
-        if os.path.exists(slide_directory):
-            slide_documents = SimpleDirectoryReader(slide_directory).load_data()
+    slide_nodes = []
+    transcript_nodes = []
+
+    if os.path.exists(slide_directory):
+        slide_documents = SimpleDirectoryReader(slide_directory).load_data()
+        
+        # TODO: Do not hardcode this on NLP exams
+        slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
+        date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
+        date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
+
+        for doc in slide_documents:
+            doc.text = re.sub(slide_prefix_pattern, "", doc.text)
+            doc.text = re.sub(date_slide_pattern_en, "", doc.text)
+            doc.text = re.sub(date_slide_pattern_de, "", doc.text)
+
+        # This ensures that each node is a separate slide
+        slide_splitter = SentenceSplitter(chunk_size=10000, chunk_overlap=0)
+        slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_documents)
             
-            # TODO: Do not hardcode this on NLP exams
-            slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
-            date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
-            date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
+    if os.path.exists(transcript_directory):
+        transcript_documents = SimpleDirectoryReader(transcript_directory).load_data()
 
-            for doc in slide_documents:
-                doc.text = re.sub(slide_prefix_pattern, "", doc.text)
-                doc.text = re.sub(date_slide_pattern_en, "", doc.text)
-                doc.text = re.sub(date_slide_pattern_de, "", doc.text)
+        text_splitter = SentenceSplitter(chunk_size=200, chunk_overlap=10)
+        transcript_nodes = text_splitter.get_nodes_from_documents(documents=transcript_documents)
 
-            # This ensures that each node is a separate slide
-            slide_splitter = SentenceSplitter(chunk_size=10000, chunk_overlap=0)
-            slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_documents)
-                
-        if os.path.exists(transcript_directory):
-            transcript_documents = SimpleDirectoryReader(transcript_directory).load_data()
+    nodes = slide_nodes + transcript_nodes
 
-            text_splitter = SentenceSplitter(chunk_size=200, chunk_overlap=10)
-            transcript_nodes = text_splitter.get_nodes_from_documents(documents=transcript_documents)
+    if not nodes:
+        print("No nodes were created")
+        return
 
-        nodes = slide_nodes + transcript_nodes
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
 
-        if not nodes:
-            print("No nodes were created")
-            return
-
-        storage_context = StorageContext.from_defaults(vector_store=vector_store)
-
-        index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
-        storage_context.persist(persist_dir=persist_dir)
-    
     return index
 
 
