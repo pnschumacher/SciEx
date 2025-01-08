@@ -15,7 +15,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
-LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini', 'llama-3.1', 'llama-3.3', 'llama-3.1_cm', 'llama-3.3_cm']
+LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini', 'llama-3.1', 'llama-3.3', 'llama-3.3-slides-only', 'llama-3.3_transcripts-only', 'llama-3.3-slides-and-transcripts']
 EXAM_LIST = [
     {"exam_name": "nlp_march_2023", "lang": ["en", "de"]},
     {"exam_name": "dl4cv2_feb_2024", "lang": ["en", "de"]},
@@ -154,7 +154,9 @@ def prompt_prefix(lang, stack_figures=False, use_course_material=False):
         if lang == 'en':
             extra_message += "Additionally, you will be provided with some course materials (can be found in 'Context'). " \
                 "You can use that additional context to answer the question if it is helpful. " \
-                "If it is not helpful, you don't have to use it. " 
+                "If it is not helpful, you don't have to use it. " \
+                "If you used the context, always finish your answer with: 'I used the following context: <context you used with metadata>'. " \
+                "If you did not use the context, always finish your answer with: 'I did not use the context.' " 
         elif lang == 'de':
             extra_message += "Zusätzlich wird Ihnen Kursmaterial zur Verfügung gestellt (zu finden unter 'Context'). " \
                 "Sie können diesen zusätzlichen Kontext zur Beantwortung der Frage nutzen, wenn er hilfreich ist und einen Bezug zur Frage hat. " \
