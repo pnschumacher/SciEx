@@ -52,3 +52,4 @@ remove_student_grades.*
 venv
 .vscode
 llm_out_cm/*
+env_vars.sh
