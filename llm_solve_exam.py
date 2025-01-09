@@ -30,7 +30,8 @@ def main():
     exam_json_path = args.exam_json_path
     use_course_material = args.use_course_material
 
-    index, retriever = None
+    index = None
+    retriever = None
     if use_course_material:
         index = get_index(exam_json_path, embedding_model_name, course_material_path)
         retriever = VectorIndexRetriever(index=index, similarity_top_k=similarity_top_k)
