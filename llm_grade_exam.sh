@@ -1,13 +1,9 @@
 #!/bin/bash
 set -eu  # Crash if variable used without being set
 
-# Setting environment
-# source /home/tdinh/.bashrc
-# conda activate py39
-# . .llava/bin/activate
-# which python
-
 source venv/bin/activate
+source env_vars.sh
+export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH # this is done so python uses correct sqlite3 version
 
 SERVER_TYPE=$1
 LLM_NAME=$2
