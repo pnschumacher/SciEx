@@ -8,7 +8,8 @@ import base64
 import io
 import re
 
-from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex, load_index_from_storage
+from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex
+from llama_index.core.schema import Document
 from llama_index.core.node_parser.text.sentence import SentenceSplitter
 from llama_index.core.storage.index_store import SimpleIndexStore
 from llama_index.vector_stores.chroma import ChromaVectorStore
@@ -418,7 +419,9 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
             new_text = re.sub(date_slide_pattern_de, "", new_text)
             new_text = re.sub(latex_pattern, "", new_text)
 
-            new_doc = doc.model_copy(update={"text": new_text})
+            doc_dict = doc.model_dump()
+            doc_dict["text"] = new_text
+            new_doc = Document.from_dict(doc_dict)
             slide_documents[i] = new_doc
 
         # This ensures that each node is a separate slide
