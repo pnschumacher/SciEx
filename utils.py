@@ -424,7 +424,7 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
             new_text = re.sub(date_slide_pattern_de, "", new_text)
             new_text = re.sub(latex_pattern, "", new_text)
             
-            file_name = doc.metadata.file_name
+            file_name = doc.metadata["file_name"]
 
             if previous_file_name == file_name:
                 pdf_text += f"{new_text}\n\n"
