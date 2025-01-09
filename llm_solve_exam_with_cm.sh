@@ -3,7 +3,7 @@ set -eu  # Crash if variable used without being set
 
 source venv/bin/activate
 source env_vars.sh
-export LD_LIBRARY_PATH=$HOME/.local/lib:${LD_LIBRARY_PATH:-}
+export LD_LIBRARY_PATH=$HOME/.local/lib:${LD_LIBRARY_PATH:-} # this is done so python uses correct sqlite3 version
 
 SERVER_TYPE=${1:-"openai"}
 LLM_NAME=${2:-"llama3.3"}
