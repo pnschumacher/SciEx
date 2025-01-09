@@ -412,9 +412,11 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
         date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
 
         for doc in slide_documents:
-            doc.text = re.sub(slide_prefix_pattern, "", doc.text)
-            doc.text = re.sub(date_slide_pattern_en, "", doc.text)
-            doc.text = re.sub(date_slide_pattern_de, "", doc.text)
+            new_text = re.sub(slide_prefix_pattern, "", doc.text)
+            new_text = re.sub(date_slide_pattern_en, "", new_text)
+            new_text = re.sub(date_slide_pattern_de, "", new_text)
+            
+            doc = doc.model_copy(update={"text": new_text})
 
         # This ensures that each node is a separate slide
         slide_splitter = SentenceSplitter(chunk_size=10000, chunk_overlap=0)
