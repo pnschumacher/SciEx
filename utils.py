@@ -433,6 +433,7 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
                 pdf_documents.append(doc)
                 pdf_text = new_text
 
+            previous_file_name = file_name
             last_doc = doc 
         
         last_doc.text_resource.text = pdf_text
