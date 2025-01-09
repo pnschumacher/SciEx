@@ -415,7 +415,7 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
 
         pdf_documents = []
         pdf_text = ""
-        previous_file_name = slide_documents[0].metadata.file_name
+        previous_file_name = slide_documents[0].metadata["file_name"]
         last_doc = None
 
         for doc in slide_documents:
