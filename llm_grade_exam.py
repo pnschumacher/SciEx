@@ -50,7 +50,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
-    llm_out_dir = f"llm_out_filtered"
+    llm_out_dir = f"llm_out_filtered_cm"
 
     for llm_id in range(len(LLM_LIST)):
         if args.nr_shots == 0:
