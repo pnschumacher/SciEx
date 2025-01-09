@@ -18,13 +18,13 @@ if [ -z ${SERVER_TYPE} ]; then
   SERVER_TYPE="openai"
 fi
 if [ -z ${LLM_NAME} ]; then
-  LLM_NAME="gpt4v"
+  LLM_NAME="llama3.3"
 fi
 if [ -z ${LLM_NAME_FULL} ]; then
-  LLM_NAME_FULL=gpt-4-vision-preview
+  LLM_NAME_FULL="meta-llama/Llama-3.3-70B-Instruct"
 fi
 if [ -z ${SERVER_URL} ]; then
-  SERVER_URL="openai"
+  SERVER_URL="http://127.0.0.1:8080"  # Local llama.cpp, needs to be deployed first on same node
 fi
 if [ -z ${NR_SHOT} ]; then
   NR_SHOT=1
