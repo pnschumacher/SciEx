@@ -418,7 +418,8 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
             new_text = re.sub(date_slide_pattern_de, "", new_text)
             new_text = re.sub(latex_pattern, "", new_text)
 
-            slide_documents[i] = doc.model_copy(update={"text": new_text})
+            new_doc = doc.model_copy(update={"text": new_text})
+            slide_documents[i] = new_doc
 
         # This ensures that each node is a separate slide
         slide_splitter = SentenceSplitter(chunk_size=10000, chunk_overlap=0)
