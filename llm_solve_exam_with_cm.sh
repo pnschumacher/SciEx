@@ -30,7 +30,7 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --embedding-model-name ${EMBEDDING_MODEL} \
     --similarity-top-k ${SIMILARITY_TOP_K} \
     --exam-json-path ${file} \
-    --use-course_material "true"
+    --use-course-material "true"
 
   echo "---------------------------------------------------------"
 done
