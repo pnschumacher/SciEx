@@ -427,7 +427,7 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
         for i in range(len(slide_documents) - window_size):
             document_text = ""
             for j in range(window_size):
-                document_text += slide_documents[i + j].text
+                document_text += f"{slide_documents[i + j].text}\n\n"
             
             slide_window_document = slide_documents[i].model_copy()
             slide_window_document.text_resource.text = document_text
