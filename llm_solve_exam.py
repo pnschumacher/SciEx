@@ -82,9 +82,10 @@ def main():
             context = [
                 {
                     "Course_Material": text_node.text, 
+                    # This could be used to analyze what material is used to answer questions but may introduce noise
                     # "Metadata": {
                     #     "Page": text_node.metadata.get("page_label"), 
-                    #     "Filename": text_node.metadata.get("file_name"), # this could be used to analyze what material is used to answer questions but may introduce noise
+                    #     "Filename": text_node.metadata.get("file_name"), 
                     # },
                 } 
                 for text_node in text_nodes
