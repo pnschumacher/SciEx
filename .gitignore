@@ -54,3 +54,4 @@ venv
 llm_out_cm/*
 env_vars.sh
 llm_out_filtered_cm/*
+results/*
