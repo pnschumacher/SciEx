@@ -414,16 +414,16 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
         latex_pattern = r"<latexit.*?>.*?<\/latexit>"
 
         for doc in slide_documents:
-            # new_text = re.sub(slide_prefix_pattern, "", doc.text)
+            new_text = re.sub(latex_pattern, "", doc.text)
+            # new_text = re.sub(slide_prefix_pattern, "", new_text)
             # new_text = re.sub(date_slide_pattern_en, "", new_text)
             # new_text = re.sub(date_slide_pattern_de, "", new_text)
-            new_text = re.sub(latex_pattern, "", new_text)
 
             doc.text_resource.text = new_text
 
         # This ensures that each node is a separate slide
         slide_splitter = SentenceSplitter(chunk_size=100000, chunk_overlap=0)
-        slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_window_documents)
+        slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_documents)
             
     if os.path.exists(transcript_directory):
         transcript_documents = SimpleDirectoryReader(transcript_directory).load_data()
