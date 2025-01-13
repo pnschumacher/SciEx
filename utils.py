@@ -1,10 +1,19 @@
+import argparse
 import json
 import os
 from PIL import Image, ImageDraw, ImageFont
+import chromadb
 import fitz  # PyMuPDF, imported as fitz for backward compatibility reasons
 import base64
 import io
 import re
+
+from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex
+from llama_index.core.schema import Document
+from llama_index.core.node_parser.text.sentence import SentenceSplitter
+from llama_index.core.storage.index_store import SimpleIndexStore
+from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
 LLM_LIST = ['llava', 'mistral', 'mixtral', 'qwen', 'claude', 'gpt35', 'gpt4v', 'o1-mini']
@@ -127,20 +136,33 @@ def grading_prompt_prefix(lang, shots=[], with_ref=False, stack_figures=False):
     return prompt
 
 
-def prompt_prefix(lang, stack_figures=False):
+def prompt_prefix(lang, stack_figures=False, use_course_material=False):
     """
     :param lang: 'en' or 'de'
     :return: prompt prefix as a string
     """
+
+    extra_message = ''
     if stack_figures:
         if lang == 'en':
-            extra_message = "Note that the single input figure could contain multiple figures stacked vertically. "
+            extra_message += "Note that the single input figure could contain multiple figures stacked vertically. "
         elif lang == 'de':
-            extra_message = "Beachten Sie, dass die einzelne Eingabe Figur mehrere vertikal gestapelte Figuren enthalten kann. "
+            extra_message += "Beachten Sie, dass die einzelne Eingabe Figur mehrere vertikal gestapelte Figuren enthalten kann. "
         else:
             raise RuntimeError(f"No prompt for lang {lang}")
-    else:
-        extra_message = ""
+    
+    if use_course_material:
+        if lang == 'en':
+            extra_message += "Additionally, you will be provided with some course materials (can be found in 'Context'). " \
+                "You can use that additional context to answer the question if it is helpful. " \
+                "If it is not helpful, you don't have to use it. " 
+        elif lang == 'de':
+            extra_message += "Zusätzlich wird Ihnen Kursmaterial zur Verfügung gestellt (zu finden unter 'Context'). " \
+                "Sie können diesen zusätzlichen Kontext zur Beantwortung der Frage nutzen, wenn er hilfreich ist und einen Bezug zur Frage hat. " \
+                "Wenn nicht, müssen Sie ihn nicht verwenden. " 
+        else:
+            raise RuntimeError(f"No prompt for lang {lang}")
+        
     if lang == 'en':
         prompt = "You are a university student. Please answer the following JSON-formatted exam question. " \
                  "The subquestions (if any) are indexed. " \
@@ -360,3 +382,72 @@ def remove_key(d, key):
     new_d = d.copy()
     new_d.pop(key)
     return new_d
+
+
+def get_index(exam_json_path, embedding_model_name, course_material_path):
+    exam_name, lang = info_from_exam_path(exam_json_path)
+
+    print("Creating new index...")
+    
+    embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
+
+    chroma_client = chromadb.EphemeralClient()
+    chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+
+    if not os.path.exists(f"{course_material_path}/{exam_name}_{lang}"):
+        raise FileNotFoundError(f"Course material path {course_material_path}/{exam_name}_{lang} does not exist.")
+
+    slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"
+    transcript_directory = f"{course_material_path}/{exam_name}_{lang}/transcripts"
+
+    slide_nodes = []
+    transcript_nodes = []
+
+    if os.path.exists(slide_directory):
+        slide_documents = SimpleDirectoryReader(slide_directory).load_data()
+
+        # TODO: Do not hardcode this on NLP exams
+        # slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
+        # date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
+        # date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
+        latex_pattern = r"<latexit.*?>.*?<\/latexit>"
+
+        for doc in slide_documents:
+            # new_text = re.sub(slide_prefix_pattern, "", doc.text)
+            # new_text = re.sub(date_slide_pattern_en, "", new_text)
+            # new_text = re.sub(date_slide_pattern_de, "", new_text)
+            new_text = re.sub(latex_pattern, "", new_text)
+
+            doc.text_resource.text = new_text
+
+        # This ensures that each node is a separate slide
+        slide_splitter = SentenceSplitter(chunk_size=100000, chunk_overlap=0)
+        slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_window_documents)
+            
+    if os.path.exists(transcript_directory):
+        transcript_documents = SimpleDirectoryReader(transcript_directory).load_data()
+
+        text_splitter = SentenceSplitter(chunk_size=200, chunk_overlap=10)
+        transcript_nodes = text_splitter.get_nodes_from_documents(documents=transcript_documents)
+
+    nodes = slide_nodes + transcript_nodes
+
+    if not nodes:
+        print("No nodes were created")
+        return
+
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
+
+    return index
+
+
+def stringToBool(value):
+    if isinstance(value, bool):
+        return value
+    if value.lower() in ("true", "yes", "1"):
+        return True
+    elif value.lower() in ("false", "no", "0"):
+        return False
+    raise argparse.ArgumentTypeError("Boolean value expected.")

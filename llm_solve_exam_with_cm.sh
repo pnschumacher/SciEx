@@ -9,6 +9,9 @@ SERVER_TYPE=${1:-"openai"}
 LLM_NAME=${2:-"llama3.3"}
 LLM_NAME_FULL=${3:-"meta-llama/Llama-3.3-70B-Instruct"}
 SERVER_URL=${4:-"http://127.0.0.1:8080"}  # Local llama.cpp, needs to be deployed first on same node
+COURSE_MATERIAL_PATH=${5:-"$DEF_COURSE_MATERIAL_PATH"}  # defined in env_vars.sh
+EMBEDDING_MODEL=${6:-"BAAI/bge-large-en"}
+SIMILARITY_TOP_K=${7:-"10"}
 
 # Loop through each JSON file in the current directory and its subdirectories
 for file in $(find exams_json/ -type f -name '*.json'); do
@@ -23,7 +26,11 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --server-url ${SERVER_URL} \
     --llm-name-full ${LLM_NAME_FULL} \
     --llm-name ${LLM_NAME} \
-    --exam-json-path ${file}
+    --course-material-path ${COURSE_MATERIAL_PATH} \
+    --embedding-model-name ${EMBEDDING_MODEL} \
+    --similarity-top-k ${SIMILARITY_TOP_K} \
+    --exam-json-path ${file} \
+    --use-course-material "true"
 
   echo "---------------------------------------------------------"
 done

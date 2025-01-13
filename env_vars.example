@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export OPENAI_API_KEY="<your_OPEN_API_KEY>"
+export DEF_COURSE_MATERIAL_PATH="<path_to_course_material>"
