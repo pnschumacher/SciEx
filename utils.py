@@ -408,30 +408,18 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
         slide_documents = SimpleDirectoryReader(slide_directory).load_data()
 
         # TODO: Do not hardcode this on NLP exams
-        slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
-        date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
-        date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
+        # slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
+        # date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
+        # date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
         latex_pattern = r"<latexit.*?>.*?<\/latexit>"
 
         for doc in slide_documents:
-            new_text = re.sub(slide_prefix_pattern, "", doc.text)
-            new_text = re.sub(date_slide_pattern_en, "", new_text)
-            new_text = re.sub(date_slide_pattern_de, "", new_text)
+            # new_text = re.sub(slide_prefix_pattern, "", doc.text)
+            # new_text = re.sub(date_slide_pattern_en, "", new_text)
+            # new_text = re.sub(date_slide_pattern_de, "", new_text)
             new_text = re.sub(latex_pattern, "", new_text)
 
             doc.text_resource.text = new_text
-
-        slide_window_documents = []
-        window_size = 5
-
-        for i in range(len(slide_documents) - window_size):
-            document_text = ""
-            for j in range(window_size):
-                document_text += f"{slide_documents[i + j].text}\n\n"
-            
-            slide_window_document = slide_documents[i].model_copy()
-            slide_window_document.text_resource.text = document_text
-            slide_window_documents.append(slide_window_document)
 
         # This ensures that each node is a separate slide
         slide_splitter = SentenceSplitter(chunk_size=100000, chunk_overlap=0)
