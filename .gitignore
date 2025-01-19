@@ -54,3 +54,4 @@ venv
 llm_out_cm/*
 env_vars.sh
 results/*
+exams_json_test
