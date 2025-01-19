@@ -395,11 +395,16 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
     chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 
-    if not os.path.exists(f"{course_material_path}/{exam_name}_{lang}"):
-        raise FileNotFoundError(f"Course material path {course_material_path}/{exam_name}_{lang} does not exist.")
+    if os.path.exists(f"{course_material_path}/{exam_name}_{lang}"):
+        slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"
+        transcript_directory = f"{course_material_path}/{exam_name}_{lang}/transcripts"
 
-    slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"
-    transcript_directory = f"{course_material_path}/{exam_name}_{lang}/transcripts"
+    elif os.path.exists(f"{course_material_path}/{exam_name}"):
+        slide_directory = f"{course_material_path}/{exam_name}/slides"
+        transcript_directory = f"{course_material_path}/{exam_name}/transcripts"
+
+    else:
+        raise FileNotFoundError(f"Course material path {course_material_path} for {exam_name} does not exist.")
 
     slide_nodes = []
     transcript_nodes = []
