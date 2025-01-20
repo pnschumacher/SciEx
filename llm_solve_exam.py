@@ -30,6 +30,20 @@ def main():
     exam_json_path = args.exam_json_path
     use_course_material = args.use_course_material
 
+    exam_name, lang = info_from_exam_path(exam_json_path)
+    if use_course_material:
+        out_dir = f"llm_out_cm/{exam_name}"
+    else:
+        out_dir = f"llm_out/{exam_name}"
+
+    out_path = f"{out_dir}/{exam_name}_{lang}_{llm_name}.txt"
+
+    if os.path.isfile(out_path):
+        print("LLM output already available. Skip")
+        exit()
+
+    os.makedirs(out_dir, exist_ok=True)
+
     index = None
     retriever = None
     if use_course_material:
@@ -46,21 +60,6 @@ def main():
         llm_client = HFLlava(model=llm_name_full, device='cuda')
     else:
         raise RuntimeError(f"server_type {server_type} not implemented.")
-
-    exam_name, lang = info_from_exam_path(exam_json_path)
-
-    if use_course_material:
-        out_dir = f"llm_out_cm/{exam_name}"
-    else:
-        out_dir = f"llm_out/{exam_name}"
-
-    out_path = f"{out_dir}/{exam_name}_{lang}_{llm_name}.txt"
-
-    if os.path.isfile(out_path):
-        print("LLM output already available. Skip")
-        exit()
-
-    os.makedirs(out_dir, exist_ok=True)
 
     prompt = prompt_prefix(lang=lang, use_course_material=use_course_material)
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
