@@ -2,17 +2,15 @@ import argparse
 import json
 import os
 from PIL import Image, ImageDraw, ImageFont
-import chromadb
+import qdrant_client
 import fitz  # PyMuPDF, imported as fitz for backward compatibility reasons
 import base64
 import io
 import re
 
 from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex
-from llama_index.core.schema import Document
 from llama_index.core.node_parser.text.sentence import SentenceSplitter
-from llama_index.core.storage.index_store import SimpleIndexStore
-from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
@@ -391,9 +389,10 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
     
     embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
 
-    chroma_client = chromadb.EphemeralClient()
-    chroma_collection = chroma_client.create_collection(f"{exam_name}_{lang}")
-    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    client = qdrant_client.QdrantClient(
+        location=":memory:",
+    )
+    vector_store = QdrantVectorStore(client=client, collection_name=f"{exam_name}_{lang}")
 
     if os.path.exists(f"{course_material_path}/{exam_name}_{lang}"):
         slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"

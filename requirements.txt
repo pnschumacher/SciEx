@@ -13,4 +13,6 @@ transformers==4.39.2
 llama-index==0.12.1
 chromadb==0.5.20
 llama-index-vector-stores-chroma==0.4.0
+qdrant-client==1.13.0
+llama-index-vector-stores-qdrant==0.4.0
 llama-index-embeddings-huggingface==0.4.0
