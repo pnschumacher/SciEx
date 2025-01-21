@@ -292,6 +292,11 @@ def write_text_file(string, file_path):
         file.write(string)
 
 
+def write_json_file(data, json_path):
+    with open(json_path, 'w') as json_file:
+        json.dump(data, json_file, indent=4) 
+
+
 def encode_image(image_path=None, pil_image=None):
     if image_path is not None:
         with open(image_path, "rb") as image_file:

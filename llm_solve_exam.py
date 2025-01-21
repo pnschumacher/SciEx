@@ -1,6 +1,6 @@
 import json
 import os
-from utils import prompt_prefix, load_json, stringToBool, write_text_file, info_from_exam_path, process_images, get_index
+from utils import prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index
 import argparse
 
 from llm_clients import OpenAIClient, ClaudeClient, HFTextGenClient, HFLlava
@@ -33,6 +33,7 @@ def main():
     exam_name, lang = info_from_exam_path(exam_json_path)
     if use_course_material:
         out_dir = f"llm_out_cm/{exam_name}"
+        context_path = f"{out_dir}/used_context_{exam_name}_{lang}_{llm_name}.txt"
     else:
         out_dir = f"llm_out/{exam_name}"
 
@@ -65,6 +66,10 @@ def main():
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
 
     exam_out = ''
+
+    if use_course_material:
+        used_context = {}
+
     for question in exam['Questions']:
         question_id = question.pop("Index")
 
@@ -90,6 +95,7 @@ def main():
                 for text_node in text_nodes
             ]
 
+            used_context[question_id] = context
             question = {"Context": context, **question}
 
         print(question)
@@ -107,6 +113,9 @@ def main():
         exam_out += "****************************************************************************************\n\n\n\n\n"
 
     write_text_file(exam_out, out_path)
+
+    if use_course_material:
+        write_json_file(used_context, context_path)
 
 
 if __name__ == "__main__":
