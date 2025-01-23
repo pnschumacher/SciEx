@@ -387,11 +387,10 @@ def remove_key(d, key):
     return new_d
 
 
-def get_index(exam_json_path, embedding_model_name, course_material_path):
+def get_index_and_client(exam_json_path, embedding_model_name, course_material_path):
     exam_name, lang = info_from_exam_path(exam_json_path)
+    print(f"Creating new index for {exam_name}_{lang}...")
 
-    print("Creating new index...")
-    
     embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
 
     client = qdrant_client.QdrantClient(
@@ -449,7 +448,19 @@ def get_index(exam_json_path, embedding_model_name, course_material_path):
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
 
-    return index
+    return index, client
+
+
+def delete_index(exam_json_path, client):
+    exam_name, lang = info_from_exam_path(exam_json_path)
+    print(f"Deleting index for {exam_name}_{lang}...")
+
+    collection_name = f"{exam_name}_{lang}"
+    if collection_name in [c.name for c in client.get_collections().collections]:
+        client.delete_collection(collection_name=collection_name)
+        print(f"Index for {exam_name}_{lang} deleted.")
+    else:
+        print(f"Index for {exam_name}_{lang} does not exist.")
 
 
 def stringToBool(value):

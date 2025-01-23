@@ -1,6 +1,6 @@
 import json
 import os
-from utils import prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index
+from utils import prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index_and_client, delete_index
 import argparse
 
 from llm_clients import OpenAIClient, ClaudeClient, HFTextGenClient, HFLlava
@@ -48,7 +48,7 @@ def main():
     index = None
     retriever = None
     if use_course_material:
-        index = get_index(exam_json_path, embedding_model_name, course_material_path)
+        index, client = get_index_and_client(exam_json_path, embedding_model_name, course_material_path)
         retriever = VectorIndexRetriever(index=index, similarity_top_k=similarity_top_k)
     
     if server_type == 'openai':
@@ -116,6 +116,7 @@ def main():
 
     if use_course_material:
         write_json_file(used_context, context_path)
+        delete_index(exam_json_path=exam_json_path, client=client)
 
 
 if __name__ == "__main__":
