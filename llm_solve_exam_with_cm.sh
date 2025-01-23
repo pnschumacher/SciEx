@@ -12,6 +12,7 @@ SERVER_URL=${4:-"http://127.0.0.1:8080"}  # Local llama.cpp, needs to be deploye
 COURSE_MATERIAL_PATH=${5:-"$DEF_COURSE_MATERIAL_PATH"}  # defined in env_vars.sh
 EMBEDDING_MODEL=${6:-"BAAI/bge-m3"}
 SIMILARITY_TOP_K=${7:-"10"}
+VECTOR_DB_PATH=${8:-"$DEF_VECTOR_DB_PATH"}  # defined in env_vars.sh
 
 # Loop through each JSON file in the current directory and its subdirectories
 for file in $(find exams_json/ -type f -name '*.json'); do
@@ -29,6 +30,7 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --course-material-path ${COURSE_MATERIAL_PATH} \
     --embedding-model-name ${EMBEDDING_MODEL} \
     --similarity-top-k ${SIMILARITY_TOP_K} \
+    --vector-db-path ${VECTOR_DB_PATH} \
     --exam-json-path ${file} \
     --use-course-material "true"
 

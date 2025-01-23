@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--course-material-path", default=None)
     parser.add_argument("--embedding-model-name", default="BAAI/bge-large-en")
     parser.add_argument("--similarity-top-k", type=int, default=10)
+    parser.add_argument("--vector-db-path", default=None)
     parser.add_argument("--exam-json-path")
     parser.add_argument("--use-course-material", type=stringToBool, default=False)
     args = parser.parse_args()
@@ -27,6 +28,7 @@ def main():
     course_material_path = args.course_material_path
     embedding_model_name = args.embedding_model_name
     similarity_top_k = args.similarity_top_k
+    vector_db_path = args.vector_db_path
     exam_json_path = args.exam_json_path
     use_course_material = args.use_course_material
 
