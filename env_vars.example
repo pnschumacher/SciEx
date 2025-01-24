@@ -3,3 +3,4 @@
 export OPENAI_API_KEY="<your_OPEN_API_KEY>"
 export DEF_COURSE_MATERIAL_PATH="<path_to_course_material>"
 export DEF_VECTOR_DB_PATH="<path_to_vector_database>"
+export DEF_EMBEDDING_MODEL_PATH="<path_where_embedding_model_will_be_stored>"

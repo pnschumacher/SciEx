@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--llm-name", default='gpt35')
     parser.add_argument("--course-material-path", default=None)
     parser.add_argument("--embedding-model-name", default="BAAI/bge-large-en")
+    parser.add_argument("--embedding-model-path", default=None)
     parser.add_argument("--similarity-top-k", type=int, default=10)
     parser.add_argument("--vector-db-path", default=None)
     parser.add_argument("--exam-json-path")
@@ -27,6 +28,7 @@ def main():
     llm_name = args.llm_name
     course_material_path = args.course_material_path
     embedding_model_name = args.embedding_model_name
+    embedding_model_path = args.embedding_model_path
     similarity_top_k = args.similarity_top_k
     vector_db_path = args.vector_db_path
     exam_json_path = args.exam_json_path
@@ -50,7 +52,13 @@ def main():
     index = None
     retriever = None
     if use_course_material:
-        index, client = get_index_and_client(exam_json_path, embedding_model_name, course_material_path)
+        index, client = get_index_and_client(
+            exam_json_path=exam_json_path, 
+            embedding_model_name=embedding_model_name, 
+            embedding_model_path=embedding_model_path, 
+            course_material_path=course_material_path, 
+            vector_db_path=vector_db_path,
+        )
         retriever = VectorIndexRetriever(index=index, similarity_top_k=similarity_top_k)
     
     if server_type == 'openai':

@@ -387,11 +387,11 @@ def remove_key(d, key):
     return new_d
 
 
-def get_index_and_client(exam_json_path, embedding_model_name, course_material_path, vector_db_path):
+def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_path, course_material_path, vector_db_path):
     exam_name, lang = info_from_exam_path(exam_json_path)
     print(f"Creating new index for {exam_name}_{lang}...")
 
-    embed_model = HuggingFaceEmbedding(model_name=embedding_model_name)
+    embed_model = HuggingFaceEmbedding(model_name=embedding_model_name, cache_folder=embedding_model_path)
 
     if vector_db_path is None:
         client = qdrant_client.QdrantClient(
