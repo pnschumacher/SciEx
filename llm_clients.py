@@ -25,7 +25,7 @@ class OpenAIClient(LLMClient):
         self.model = model
         self.seed = seed
         if self.server_url != "openai":
-            self.client = OpenAI(base_url=self.server_url, timeout=900)
+            self.client = OpenAI(base_url=self.server_url, timeout=5000)
         else:
             self.client = OpenAI(timeout=900)
 
