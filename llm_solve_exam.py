@@ -52,13 +52,18 @@ def main():
     index = None
     retriever = None
     if use_course_material:
-        index, client = get_index_and_client(
-            exam_json_path=exam_json_path, 
-            embedding_model_name=embedding_model_name, 
-            embedding_model_path=embedding_model_path, 
-            course_material_path=course_material_path, 
-            vector_db_path=vector_db_path,
-        )
+        try:
+            index, client = get_index_and_client(
+                exam_json_path=exam_json_path, 
+                embedding_model_name=embedding_model_name, 
+                embedding_model_path=embedding_model_path, 
+                course_material_path=course_material_path, 
+                vector_db_path=vector_db_path,
+            )
+        except FileNotFoundError as e:
+            print(e)
+            return
+
         retriever = VectorIndexRetriever(index=index, similarity_top_k=similarity_top_k)
     
     if server_type == 'openai':
