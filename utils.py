@@ -420,19 +420,10 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
 
     if os.path.exists(slide_directory):
         slide_documents = SimpleDirectoryReader(slide_directory).load_data()
-
-        # TODO: Do not hardcode this on NLP exams
-        # slide_prefix_pattern = r'^[^\n]*Niehues[^\n]*\n'
-        # date_slide_pattern_en = r"\n(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}\d{1,3}"
-        # date_slide_pattern_de = r"\n\d{1,2}. (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember) \d{4}\d{1,3}"
         latex_pattern = r"<latexit.*?>.*?<\/latexit>"
 
         for doc in slide_documents:
             new_text = re.sub(latex_pattern, "", doc.text)
-            # new_text = re.sub(slide_prefix_pattern, "", new_text)
-            # new_text = re.sub(date_slide_pattern_en, "", new_text)
-            # new_text = re.sub(date_slide_pattern_de, "", new_text)
-
             doc.text_resource.text = new_text
 
         # This ensures that each node is a separate slide
