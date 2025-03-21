@@ -370,6 +370,9 @@ def load_text_file(file_path, single_str=True):
     """
     Load the whole text file to a single string or to a list of strings, each represents a line
     """
+    if not os.path.exists(file_path):
+        return None 
+    
     if single_str:
         with open(file_path, "r") as file:
             string = file.read()
