@@ -94,7 +94,7 @@ def main():
         llm_out_path = f"{llm_out_dir}/{exam_name}/{exam_name}_{lang}_llm{llm_id}.txt"
         exam_answer = load_text_file(llm_out_path, single_str=True)
         if exam_answer is None:
-            print(f"Exam answer for {exam_name}_{lang} of f{LLM_LIST[llm_id]} does not exist")
+            print(f"Exam answer for {exam_name}_{lang} of {LLM_LIST[llm_id]} does not exist")
             continue
 
         for q in range(len(exam['Questions'])):
