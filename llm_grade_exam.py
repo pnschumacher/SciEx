@@ -16,6 +16,8 @@ def main():
     parser.add_argument("--nr-shots", default=0, type=int)
     parser.add_argument("--shot-type", default="same_question", type=str, choices=['same_question', 'same_exam', 'diff_exam'])
     parser.add_argument("--with-ref", default='no', choices=['yes', 'no'], type=str)
+    parser.add_argument("--llm-out-dir-name", default="llm_out_filtered", type=str)
+    parser.add_argument("--llm-out-grade-name", default="llm_grade", type=str)
     parser.add_argument("--exam-json-path")
     args = parser.parse_args()
 
@@ -40,9 +42,9 @@ def main():
         raise RuntimeError(f"server_type {args.server_type} not implemented.")
 
     if args.with_ref == 'no':
-        out_dir = f"llm_grade/{exam_name}/grader_{args.llm_name}/{args.nr_shots}_shot"
+        out_dir = f"{args.llm_out_grade_name}/{exam_name}/grader_{args.llm_name}/{args.nr_shots}_shot"
     elif args.with_ref == 'yes':
-        out_dir = f"llm_grade/{exam_name}/grader_{args.llm_name}/{args.nr_shots}_shot_with_ref"
+        out_dir = f"{args.llm_out_grade_name}/{exam_name}/grader_{args.llm_name}/{args.nr_shots}_shot_with_ref"
     else:
         raise RuntimeError(f"Invalid value for --with-ref")
     if args.nr_shots > 0:
@@ -50,9 +52,9 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
-    llm_out_dir = f"llm_out_filtered"
+    llm_out_dir = args.llm_out_dir_name
 
-    for llm_id in range(len(LLM_LIST)):
+    for llm_id in range(12, len(LLM_LIST)):
         if args.nr_shots == 0:
             shot_llms, shot_exam_name = None, None
         else:

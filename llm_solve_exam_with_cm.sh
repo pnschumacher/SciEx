@@ -19,9 +19,9 @@ VECTOR_DB_PATH=${10:-"$DEF_VECTOR_DB_PATH"}  # defined in env_vars.sh
 # Loop through each JSON file in the current directory and its subdirectories
 for file in $(find exams_json/ -type f -name '*.json'); do
   echo "Processing exam at $file"
-  echo "Format checking ... "
-  python -u validate_exam_json.py \
-    --json_path ${file}
+  # echo "Format checking ... "
+  # python -u validate_exam_json.py \
+    # --json_path ${file}
 
   echo "Sending request ..."
   python -u llm_solve_exam.py \

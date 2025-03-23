@@ -12,6 +12,8 @@ SERVER_URL=${4:-"http://127.0.0.1:8080"}  # Local llama.cpp, needs to be deploye
 NR_SHOT=${5:-1}
 SHOT_TYPE=${6:-"same_question"}
 REF=${7:-"yes"}
+LLM_OUT_DIR_NAME=${8-:"llm_out_filtered"}
+LLM_OUT_GRADE_NAME=${9-:"llm_grade"}
 
 # Loop through each JSON file in the current directory and its subdirectories
 for file in $(find exams_json/ -type f -name '*.json'); do
@@ -25,7 +27,9 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --exam-json-path ${file} \
     --nr-shots ${NR_SHOT} \
     --shot-type ${SHOT_TYPE} \
-    --with-ref ${REF}
+    --with-ref ${REF} \
+    --llm-out-dir-name ${LLM_OUT_DIR_NAME} \
+    --llm-out-grade-name ${LLM_OUT_GRADE_NAME}
 
   echo "---------------------------------------------------------"
 done
