@@ -1,6 +1,6 @@
 import json
 import os
-from utils import prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index_and_client, delete_index
+from utils import CourseMaterialType, prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index_and_client, delete_index
 import argparse
 
 from llm_clients import OpenAIClient, ClaudeClient, HFTextGenClient, HFLlava
@@ -14,6 +14,7 @@ def main():
     parser.add_argument("--llm-name-full", default="gpt-3.5-turbo-0125")
     parser.add_argument("--llm-name", default='gpt35')
     parser.add_argument("--course-material-path", default=None)
+    parser.add_argument("--course-material-type", default=CourseMaterialType.SLIDES)
     parser.add_argument("--embedding-model-name", default="BAAI/bge-large-en")
     parser.add_argument("--embedding-model-path", default=None)
     parser.add_argument("--similarity-top-k", type=int, default=10)
@@ -27,6 +28,7 @@ def main():
     llm_name_full = args.llm_name_full
     llm_name = args.llm_name
     course_material_path = args.course_material_path
+    course_material_type = args.course_material_type
     embedding_model_name = args.embedding_model_name
     embedding_model_path = args.embedding_model_path
     similarity_top_k = args.similarity_top_k
@@ -36,7 +38,7 @@ def main():
 
     exam_name, lang = info_from_exam_path(exam_json_path)
     if use_course_material:
-        out_dir = f"llm_out_cm/{exam_name}"
+        out_dir = f"llm_out_{course_material_type}/{exam_name}"
         context_path = f"{out_dir}/used_context_{exam_name}_{lang}_{llm_name}.txt"
     else:
         out_dir = f"llm_out/{exam_name}"
@@ -57,7 +59,8 @@ def main():
                 exam_json_path=exam_json_path, 
                 embedding_model_name=embedding_model_name, 
                 embedding_model_path=embedding_model_path, 
-                course_material_path=course_material_path, 
+                course_material_path=course_material_path,
+                course_material_type=course_material_type,
                 vector_db_path=vector_db_path,
             )
         except FileNotFoundError as e:

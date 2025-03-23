@@ -7,6 +7,7 @@ import fitz  # PyMuPDF, imported as fitz for backward compatibility reasons
 import base64
 import io
 import re
+from enum import StrEnum
 
 from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex
 from llama_index.core.node_parser.text.sentence import SentenceSplitter
@@ -29,6 +30,12 @@ EXAM_LIST = [
     {"exam_name": "DLNN-WS2223", "lang": ["en"]},  # de
     {"exam_name": "algo_ws2324", "lang": ["de"]},
 ]
+
+
+class CourseMaterialType(StrEnum):
+    SLIDES = "slides"
+    TRANSCRIPTS = "transcripts"
+    EXERCISES = "exercises"
 
 
 def map_llm_to_index(llm_name):
@@ -390,7 +397,7 @@ def remove_key(d, key):
     return new_d
 
 
-def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_path, course_material_path, vector_db_path):
+def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_path, course_material_path, course_material_type, vector_db_path):
     exam_name, lang = info_from_exam_path(exam_json_path)
     print(f"Creating new index for {exam_name}_{lang}...")
 
@@ -410,10 +417,12 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
     if os.path.exists(f"{course_material_path}/{exam_name}_{lang}"):
         slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"
         transcript_directory = f"{course_material_path}/{exam_name}_{lang}/transcripts"
+        exercise_directory = f"{course_material_path}/{exam_name}_{lang}/exercises"
 
     elif os.path.exists(f"{course_material_path}/{exam_name}"):
         slide_directory = f"{course_material_path}/{exam_name}/slides"
         transcript_directory = f"{course_material_path}/{exam_name}/transcripts"
+        exercise_directory = f"{course_material_path}/{exam_name}/exercises"
 
     else:
         raise FileNotFoundError(f"Course material path {course_material_path} for {exam_name} does not exist.")
@@ -421,7 +430,7 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
     slide_nodes = []
     transcript_nodes = []
 
-    if os.path.exists(slide_directory):
+    if CourseMaterialType.SLIDES in course_material_type and os.path.exists(slide_directory):
         slide_documents = SimpleDirectoryReader(slide_directory).load_data()
         latex_pattern = r"<latexit.*?>.*?<\/latexit>"
 
@@ -433,11 +442,14 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
         slide_splitter = SentenceSplitter(chunk_size=100000, chunk_overlap=0)
         slide_nodes = slide_splitter.get_nodes_from_documents(documents=slide_documents)
             
-    if os.path.exists(transcript_directory):
+    if CourseMaterialType.TRANSCRIPTS in course_material_type and os.path.exists(transcript_directory):
         transcript_documents = SimpleDirectoryReader(transcript_directory).load_data()
 
         text_splitter = SentenceSplitter(chunk_size=200, chunk_overlap=10)
         transcript_nodes = text_splitter.get_nodes_from_documents(documents=transcript_documents)
+
+    if CourseMaterialType.EXERCISES in course_material_type and os.path.exists(exercise_directory):
+        print("Handling for exercises is not implemented yet")
 
     nodes = slide_nodes + transcript_nodes
 
