@@ -38,7 +38,7 @@ def main():
 
     exam_name, lang = info_from_exam_path(exam_json_path)
     if use_course_material:
-        out_dir = f"llm_out_{course_material_type}/{exam_name}"
+        out_dir = f"llm_out_{course_material_type}_{similarity_top_k}/{exam_name}"
         context_path = f"{out_dir}/used_context_{exam_name}_{lang}_{llm_name}.txt"
     else:
         out_dir = f"llm_out/{exam_name}"
