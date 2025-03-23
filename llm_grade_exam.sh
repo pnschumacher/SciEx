@@ -13,7 +13,7 @@ NR_SHOT=${5:-1}
 SHOT_TYPE=${6:-"same_question"}
 REF=${7:-"yes"}
 LLM_OUT_DIR_NAME=${8-:"llm_out_filtered"}
-LLM_OUT_GRADE_NAME=${9-:"llm_grade"}
+LLM_GRADE_DIR_NAME=${9-:"llm_grade"}
 
 # Loop through each JSON file in the current directory and its subdirectories
 for file in $(find exams_json/ -type f -name '*.json'); do
@@ -29,7 +29,7 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --shot-type ${SHOT_TYPE} \
     --with-ref ${REF} \
     --llm-out-dir-name ${LLM_OUT_DIR_NAME} \
-    --llm-out-grade-name ${LLM_OUT_GRADE_NAME}
+    --llm-grade-dir-name ${LLM_GRADE_DIR_NAME}
 
   echo "---------------------------------------------------------"
 done
