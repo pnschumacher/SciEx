@@ -56,3 +56,12 @@ env_vars.sh
 results/*
 exams_json_test
 */.ipynb_checkpoints
+llm_out_slides/*
+llm_out_transcripts/*
+llm_out_exercises/*
+llm_out_slides_filtered/*
+llm_out_transcripts_filtered/*
+llm_out_exercises_filtered/*
+llm_grade_slides/*
+llm_grade_transcripts/*
+llm_grade_exercises/*
