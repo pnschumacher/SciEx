@@ -65,3 +65,4 @@ llm_out_exercises_filtered/*
 llm_grade_slides/*
 llm_grade_transcripts/*
 llm_grade_exercises/*
+llm_out_*
