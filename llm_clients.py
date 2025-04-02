@@ -31,7 +31,7 @@ class OpenAIClient(LLMClient):
 
     def send_request(self, prompt, input_body, images, **kwargs):
         time.sleep(1)
-        if "vision" in self.model:
+        if "vision" in self.model or "-VL" in self.model:
             images_messages = [
                 {
                     "type": "image_url",
