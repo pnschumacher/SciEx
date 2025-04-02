@@ -66,3 +66,6 @@ llm_grade_slides/*
 llm_grade_transcripts/*
 llm_grade_exercises/*
 llm_out_*
+llm_grade_*/*
+dummy_exams
+llm_solve_exam_dummy.sh
