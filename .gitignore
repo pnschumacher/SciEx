@@ -55,7 +55,8 @@ llm_out_cm/*
 env_vars.sh
 results/*
 exams_json_test
-*/.ipynb_checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 llm_out_slides/*
 llm_out_transcripts/*
 llm_out_exercises/*
