@@ -70,3 +70,4 @@ llm_out_*
 llm_grade_*/*
 dummy_exams
 llm_solve_exam_dummy.sh
+exams_json_not_used/
