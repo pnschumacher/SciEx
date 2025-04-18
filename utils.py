@@ -397,7 +397,7 @@ def remove_key(d, key):
     return new_d
 
 
-def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_path, course_material_path, course_material_type, vector_db_path):
+def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_path, course_material_path, course_material_type, vector_db_path, transcript_chunk_size):
     exam_name, lang = info_from_exam_path(exam_json_path)
     print(f"Creating new index for {exam_name}_{lang}...")
 
@@ -445,7 +445,8 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
     if CourseMaterialType.TRANSCRIPTS in course_material_type and os.path.exists(transcript_directory):
         transcript_documents = SimpleDirectoryReader(transcript_directory).load_data()
 
-        text_splitter = SentenceSplitter(chunk_size=200, chunk_overlap=10)
+        transcript_chunk_overlap = 0.1 * transcript_chunk_size
+        text_splitter = SentenceSplitter(chunk_size=transcript_chunk_size, chunk_overlap=transcript_chunk_overlap)
         transcript_nodes = text_splitter.get_nodes_from_documents(documents=transcript_documents)
 
     if CourseMaterialType.EXERCISES in course_material_type and os.path.exists(exercise_directory):

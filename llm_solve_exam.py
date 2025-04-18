@@ -19,6 +19,7 @@ def main():
     parser.add_argument("--embedding-model-path", default=None)
     parser.add_argument("--similarity-top-k", type=int, default=10)
     parser.add_argument("--vector-db-path", default=None)
+    parser.add_argument("--transcript-chunk-size", type=int, default=300)
     parser.add_argument("--exam-json-path")
     parser.add_argument("--use-course-material", type=stringToBool, default=False)
     args = parser.parse_args()
@@ -33,6 +34,7 @@ def main():
     embedding_model_path = args.embedding_model_path
     similarity_top_k = args.similarity_top_k
     vector_db_path = args.vector_db_path
+    transcript_chunk_size = args.transcript_chunk_size
     exam_json_path = args.exam_json_path
     use_course_material = args.use_course_material
 
@@ -62,6 +64,7 @@ def main():
                 course_material_path=course_material_path,
                 course_material_type=course_material_type,
                 vector_db_path=vector_db_path,
+                transcript_chunk_size=transcript_chunk_size,
             )
         except FileNotFoundError as e:
             print(e)
