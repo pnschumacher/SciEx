@@ -429,6 +429,7 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
 
     slide_nodes = []
     transcript_nodes = []
+    exercise_nodes = []
 
     if CourseMaterialType.SLIDES in course_material_type and os.path.exists(slide_directory):
         slide_documents = SimpleDirectoryReader(slide_directory).load_data()
@@ -450,9 +451,18 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
         transcript_nodes = text_splitter.get_nodes_from_documents(documents=transcript_documents)
 
     if CourseMaterialType.EXERCISES in course_material_type and os.path.exists(exercise_directory):
-        print("Handling for exercises is not implemented yet")
+        exercise_documents = SimpleDirectoryReader(exercise_directory).load_data()
+        latex_pattern = r"<latexit.*?>.*?<\/latexit>"
 
-    nodes = slide_nodes + transcript_nodes
+        for doc in exercise_documents:
+            new_text = re.sub(latex_pattern, "", doc.text)
+            doc.text_resource.text = new_text
+
+        # This ensures that each node is a separate exercise page
+        exercise_splitter = SentenceSplitter(chunk_size=100000, chunk_overlap=0)
+        exercise_nodes = exercise_splitter.get_nodes_from_documents(documents=exercise_documents)
+
+    nodes = slide_nodes + transcript_nodes + exercise_nodes
 
     if not nodes:
         print("No nodes were created")
