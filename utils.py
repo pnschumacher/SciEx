@@ -467,9 +467,18 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
     if not nodes:
         print("No nodes were created")
         return
+    
+    # Don't add the same nodes multiple times to ensure that k different chunks are retrieved later
+    unique_nodes = []
+    seen_texts = set()
+    for node in nodes:
+        content = node.get_content().strip()
+        if content not in seen_texts:
+            seen_texts.add(content)
+            unique_nodes.append(node)
 
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    index = VectorStoreIndex(nodes, storage_context=storage_context, embed_model=embed_model)
+    index = VectorStoreIndex(unique_nodes, storage_context=storage_context, embed_model=embed_model)
 
     return index, client
 
