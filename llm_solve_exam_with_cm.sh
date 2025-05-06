@@ -16,6 +16,8 @@ EMBEDDING_MODEL_PATH=${8:-"$DEF_EMBEDDING_MODEL_PATH"}
 SIMILARITY_TOP_K=${9:-"10"}
 VECTOR_DB_PATH=${10:-"$DEF_VECTOR_DB_PATH"}  # defined in env_vars.sh
 TRANSCRIPT_CHUNK_SIZE=${11:-"300"} 
+RETRIEVAL_CONTENT_TYPE=${12:-"text"} 
+CONTEXT_CONTENT_TYPE=${13:-"text"} 
 
 # Loop through each JSON file in the current directory and its subdirectories
 for file in $(find exams_json/ -type f -name '*.json'); do
@@ -37,6 +39,8 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --similarity-top-k ${SIMILARITY_TOP_K} \
     --vector-db-path ${VECTOR_DB_PATH} \
     --transcript-chunk-size ${TRANSCRIPT_CHUNK_SIZE} \
+    --retrieval-slide-type ${RETRIEVAL_CONTENT_TYPE} \
+    --context-slide-type ${CONTEXT_CONTENT_TYPE} \
     --exam-json-path ${file} \
     --use-course-material "true"
 

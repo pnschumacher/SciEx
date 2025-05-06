@@ -38,6 +38,12 @@ class CourseMaterialType(StrEnum):
     EXERCISES = "exercises"
 
 
+class ContentType(StrEnum):
+    TEXT = "text"
+    LAYOUT = "layout"
+    IMAGE = "image"
+
+
 def map_llm_to_index(llm_name):
     if llm_name not in LLM_LIST:
         raise RuntimeError(f"LLM {llm_name} not in list")
@@ -397,7 +403,20 @@ def remove_key(d, key):
     return new_d
 
 
-def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_path, course_material_path, course_material_type, vector_db_path, transcript_chunk_size):
+def get_index_and_client(
+        exam_json_path, 
+        embedding_model_name,
+        embedding_model_path, 
+        course_material_path, 
+        course_material_type, 
+        vector_db_path, 
+        transcript_chunk_size, 
+        retrieval_content_type
+    ):
+
+    if retrieval_content_type == ContentType.IMAGE:
+        raise NotImplementedError("Image retrieval currently not implemented")
+
     exam_name, lang = info_from_exam_path(exam_json_path)
     print(f"Creating new index for {exam_name}_{lang}...")
 
@@ -415,12 +434,22 @@ def get_index_and_client(exam_json_path, embedding_model_name, embedding_model_p
     vector_store = QdrantVectorStore(client=client, collection_name=f"{exam_name}_{lang}")
 
     if os.path.exists(f"{course_material_path}/{exam_name}_{lang}"):
-        slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"
+
+        if retrieval_content_type == ContentType.TEXT:
+            slide_directory = f"{course_material_path}/{exam_name}_{lang}/slides"
+        elif retrieval_content_type == ContentType.LAYOUT:
+            slide_directory = f"{course_material_path}/{exam_name}_{lang}/format_files"
+
         transcript_directory = f"{course_material_path}/{exam_name}_{lang}/transcripts"
         exercise_directory = f"{course_material_path}/{exam_name}_{lang}/exercises"
 
     elif os.path.exists(f"{course_material_path}/{exam_name}"):
-        slide_directory = f"{course_material_path}/{exam_name}/slides"
+
+        if retrieval_content_type == ContentType.TEXT:
+            slide_directory = f"{course_material_path}/{exam_name}/slides"
+        elif retrieval_content_type == ContentType.LAYOUT:
+            slide_directory = f"{course_material_path}/{exam_name}/format_files"
+
         transcript_directory = f"{course_material_path}/{exam_name}/transcripts"
         exercise_directory = f"{course_material_path}/{exam_name}/exercises"
 
