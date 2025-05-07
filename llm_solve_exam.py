@@ -40,7 +40,7 @@ def main():
     vector_db_path = args.vector_db_path
     transcript_chunk_size = args.transcript_chunk_size
     retrieval_content_type = args.retrieval_content_type
-    context_content_type = args.retrieval_content_type
+    context_content_type = args.context_content_type
     exam_json_path = args.exam_json_path
     use_course_material = args.use_course_material
 
