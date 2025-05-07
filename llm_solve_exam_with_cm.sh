@@ -39,8 +39,8 @@ for file in $(find exams_json/ -type f -name '*.json'); do
     --similarity-top-k ${SIMILARITY_TOP_K} \
     --vector-db-path ${VECTOR_DB_PATH} \
     --transcript-chunk-size ${TRANSCRIPT_CHUNK_SIZE} \
-    --retrieval-slide-type ${RETRIEVAL_CONTENT_TYPE} \
-    --context-slide-type ${CONTEXT_CONTENT_TYPE} \
+    --retrieval-content-type ${RETRIEVAL_CONTENT_TYPE} \
+    --context-content-type ${CONTEXT_CONTENT_TYPE} \
     --exam-json-path ${file} \
     --use-course-material "true"
 
