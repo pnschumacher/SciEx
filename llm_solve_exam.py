@@ -180,8 +180,8 @@ def main():
                         raise NotImplementedError()
                         # TODO: Read retrieved slides as images
                     
-                else:
-                    text_nodes_context = text_nodes
+            else:
+                text_nodes_context = text_nodes
 
             context = [
                 {
