@@ -2,7 +2,7 @@ import json
 import os
 import re
 import fitz
-from utils import ContentType, CourseMaterialType, prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index_and_client, delete_index
+from utils import ContentType, CourseMaterialType, prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index_and_client, delete_index, get_padding_length
 import argparse
 
 from llm_clients import OpenAIClient, ClaudeClient, HFTextGenClient, HFLlava
@@ -130,25 +130,29 @@ def main():
                         lecture_name = os.path.basename(filename).replace(".pdf", "")
                     elif filename.endswith(".txt"):
                         base_filename = os.path.basename(filename)
-                        page_number = base_filename.split("-")[-1].replace(".txt", "")
+                        page_number = int(base_filename.split("-")[-1].replace(".txt", ""))
                         lecture_name = "-".join(base_filename.split("-")[:-1])
                     else:
                         raise NotImplementedError("Only support for .pdf and .txt course material files")
                     
+                    format_dir = f"{course_material_path}/{exam_name}/format_files"
+                    padding_length = get_padding_length(format_dir, lecture_name)
+                    page_str_padded = str(page_number).zfill(padding_length)
+                                        
                     if context_content_type == ContentType.TEXT:
                         content_directory = f"{course_material_path}/{exam_name}/slides"
 
                         # All slides have PDF file type except TGI
-                        if exam_name != "TGI2324":
+                        if exam_name == "TGI2324":
+                            text_path = os.path.join(content_directory, f"{lecture_name}_{page_str_padded}.txt")
+                            with open(text_path, 'r') as file:
+                                text = file.read()                    
+                        else:
                             pdf_path = os.path.join(content_directory, f"{lecture_name}.pdf")
                             doc = fitz.open(pdf_path)
                             page = doc.load_page(page_number - 1)
                             text = page.get_text()
-                            doc.close()                        
-                        else:
-                            text_path = os.path.join(content_directory, f"{lecture_name}_{page_number}.txt")
-                            with open(text_path, 'r') as file:
-                                text = file.read()
+                            doc.close()
 
                         latex_pattern = r"<latexit.*?>.*?<\/latexit>"
                         text = re.sub(latex_pattern, "", text)
@@ -162,9 +166,9 @@ def main():
                         })
 
                     elif context_content_type == ContentType.LAYOUT:
-                        content_directory = f"{course_material_path}/{exam_name}/format_files"
+                        content_directory = format_dir
 
-                        text_path = os.path.join(content_directory, f"{lecture_name}_{page_number}.txt")
+                        text_path = os.path.join(content_directory, f"{lecture_name}_{page_str_padded}.txt")
                         with open(text_path, 'r') as file:
                             text = file.read()
 

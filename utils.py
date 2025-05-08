@@ -532,3 +532,12 @@ def stringToBool(value):
     elif value.lower() in ("false", "no", "0"):
         return False
     raise argparse.ArgumentTypeError("Boolean value expected.")
+
+
+def get_padding_length(directory: str, lecture_name: str) -> int:
+    max_len = 0
+    for fname in os.listdir(directory):
+        if fname.startswith(lecture_name + "_") and fname.endswith(".txt"):
+            page_str = fname.replace(".txt", "").split("_")[-1]
+            max_len = max(max_len, len(page_str))
+    return max_len
