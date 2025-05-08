@@ -55,7 +55,7 @@ def main():
             if retrieval_content_type == ContentType.TEXT and context_content_type == ContentType.TEXT:
                 out_dir = f"llm_out_{course_material_type}_{similarity_top_k}/{exam_name}"
             else:
-                out_dir = f"llm_out_{course_material_type}_{similarity_top_k}_{retrieval_content_type}_to_{context_content_type}/{exam_name}"
+                out_dir = f"llm_out_{course_material_type}_{retrieval_content_type}_to_{context_content_type}_{similarity_top_k}/{exam_name}"
         context_path = f"{out_dir}/used_context_{exam_name}_{lang}_{llm_name}.txt"
     else:
         out_dir = f"llm_out/{exam_name}"
