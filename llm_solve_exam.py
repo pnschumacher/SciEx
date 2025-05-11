@@ -144,7 +144,7 @@ def main():
 
                         # All slides have PDF file type except TGI
                         if exam_name == "TGI2324":
-                            text_path = os.path.join(content_directory, f"{lecture_name}_{page_str_padded}.txt")
+                            text_path = os.path.join(content_directory, f"{lecture_name}-{page_str_padded}.txt")
                             with open(text_path, 'r') as file:
                                 text = file.read()                    
                         else:
@@ -168,7 +168,7 @@ def main():
                     elif context_content_type == ContentType.LAYOUT:
                         content_directory = format_dir
 
-                        text_path = os.path.join(content_directory, f"{lecture_name}_{page_str_padded}.txt")
+                        text_path = os.path.join(content_directory, f"{lecture_name}-{page_str_padded}.txt")
                         with open(text_path, 'r') as file:
                             text = file.read()
 
