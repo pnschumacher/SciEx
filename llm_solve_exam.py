@@ -99,7 +99,7 @@ def main():
     else:
         raise RuntimeError(f"server_type {server_type} not implemented.")
 
-    prompt = prompt_prefix(lang=lang, use_course_material=use_course_material)
+    prompt = prompt_prefix(lang=lang, use_course_material=use_course_material, context_content_type=context_content_type)
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
 
     exam_out = ''
@@ -126,7 +126,7 @@ def main():
                     filename = text_node.metadata.get("file_name")
 
                     if filename.endswith(".pdf"):
-                        page_number = text_node.metadata.get("page_number")
+                        page_number = text_node.metadata.get("page_label")
                         lecture_name = os.path.basename(filename).replace(".pdf", "")
                     elif filename.endswith(".txt"):
                         base_filename = os.path.basename(filename)
