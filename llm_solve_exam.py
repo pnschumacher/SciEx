@@ -99,7 +99,7 @@ def main():
     else:
         raise RuntimeError(f"server_type {server_type} not implemented.")
 
-    prompt = prompt_prefix(lang=lang, use_course_material=use_course_material, context_content_type=context_content_type)
+    prompt = prompt_prefix(lang=lang, use_course_material=use_course_material)
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
 
     exam_out = ''
