@@ -4,6 +4,7 @@ import re
 import fitz
 from utils import ContentType, CourseMaterialType, prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index_and_client, delete_index, get_padding_length
 import argparse
+from types import SimpleNamespace
 
 from llm_clients import OpenAIClient, ClaudeClient, HFTextGenClient, HFLlava
 from llama_index.core.indices.vector_store.retrievers import VectorIndexRetriever
@@ -157,13 +158,14 @@ def main():
                         latex_pattern = r"<latexit.*?>.*?<\/latexit>"
                         text = re.sub(latex_pattern, "", text)
 
-                        text_nodes_context.append({
+                        text_node_dict = {
                             "text": text, 
                             "metadata": {
                                 "page_label": page_number,
                                 "file_name": lecture_name,
                             }
-                        })
+                        }
+                        text_nodes_context.append(SimpleNamespace(**text_node_dict))
 
                     elif context_content_type == ContentType.LAYOUT:
                         content_directory = format_dir
@@ -172,13 +174,14 @@ def main():
                         with open(text_path, 'r') as file:
                             text = file.read()
 
-                        text_nodes_context.append({
+                        text_node_dict = {
                             "text": text, 
                             "metadata": {
                                 "page_label": page_number,
                                 "file_name": lecture_name,
                             }
-                        })
+                        }
+                        text_nodes_context.append(SimpleNamespace(**text_node_dict))
 
                     elif context_content_type == ContentType.IMAGE:
                         raise NotImplementedError()
