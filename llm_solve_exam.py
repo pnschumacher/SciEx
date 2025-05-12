@@ -200,9 +200,7 @@ def main():
                         doc.close()
 
                         context_image_paths.append(output_path)
-
-
-                    
+                            
             else:
                 text_nodes_context = text_nodes
 
