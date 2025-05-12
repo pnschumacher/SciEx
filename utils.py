@@ -147,7 +147,7 @@ def grading_prompt_prefix(lang, shots=[], with_ref=False, stack_figures=False):
     return prompt
 
 
-def prompt_prefix(lang, stack_figures=False, use_course_material=False):
+def prompt_prefix(lang, stack_figures=False, use_course_material=False, context_content_type=ContentType.TEXT):
     """
     :param lang: 'en' or 'de'
     :return: prompt prefix as a string
@@ -164,13 +164,27 @@ def prompt_prefix(lang, stack_figures=False, use_course_material=False):
     
     if use_course_material:
         if lang == 'en':
-            extra_message += "Additionally, you will be provided with some course materials (can be found in 'Context'). " \
-                "You can use that additional context to answer the question if it is helpful. " \
-                "If it is not helpful, you don't have to use it. " 
+            if context_content_type != ContentType.IMAGE:
+                extra_message += "Additionally, you will be provided with some course materials (can be found in 'Context'). " \
+                    "You can use that additional context to answer the question if it is helpful. " \
+                    "If it is not helpful, you don't have to use it. "
+            else:
+                extra_message += "You will also be provided with images of course material. " \
+                    "These images each contain a path at the bottom, " \
+                    "which corresponds to the path specified in the JSON under 'Context'. " \
+                    "You can use these images to answer the question if this is helpful. " \
+                    "If they are not helpful, you don't have to use them. "
         elif lang == 'de':
-            extra_message += "Zusätzlich wird Ihnen Kursmaterial zur Verfügung gestellt (zu finden unter 'Context'). " \
-                "Sie können diesen zusätzlichen Kontext zur Beantwortung der Frage nutzen, wenn er hilfreich ist und einen Bezug zur Frage hat. " \
-                "Wenn nicht, müssen Sie ihn nicht verwenden. " 
+            if context_content_type != ContentType.IMAGE:
+                extra_message += "Zusätzlich wird Ihnen Kursmaterial zur Verfügung gestellt (zu finden unter 'Context'). " \
+                    "Sie können diesen zusätzlichen Kontext zur Beantwortung der Frage nutzen, wenn er hilfreich ist und einen Bezug zur Frage hat. " \
+                    "Wenn nicht, müssen Sie ihn nicht verwenden. " 
+            else:
+                extra_message += "Zusätzlich erhalten Sie Bilder des Kursmaterials. " \
+                    "Diese Bilder enthalten jeweils unten ihren Pfad, " \
+                    "der mit dem im JSON unter 'Context' angegebenen Pfad übereinstimmt. " \
+                    "Sie können diese Bilder verwenden, um die Frage zu beantworten, wenn dies hilfreich ist. " \
+                    "Wenn sie nicht hilfreich sind, müssen Sie sie nicht verwenden. "
         else:
             raise RuntimeError(f"No prompt for lang {lang}")
         
@@ -331,6 +345,14 @@ def process_images(exam_name, question):
     image_full_paths = [f"exams_json/{exam_name}/{x}" for x in image_paths]
     images, image_full_paths_flatten = load_images(image_full_paths)
     image_paths_flatten = [path.replace(f"exams_json/{exam_name}/", "") for path in image_full_paths_flatten]
+    image_titles = [f"Figure: {x}" for x in image_paths_flatten]
+    images = [add_title(img, title) for img, title in zip(images, image_titles)]
+    return images
+
+
+def process_context_images(image_paths):
+    images, image_full_paths_flatten = load_images(image_paths)
+    image_paths_flatten = [re.sub(r".*?(?=context_images/)", "", path) for path in image_full_paths_flatten]
     image_titles = [f"Figure: {x}" for x in image_paths_flatten]
     images = [add_title(img, title) for img, title in zip(images, image_titles)]
     return images

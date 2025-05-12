@@ -2,7 +2,7 @@ import json
 import os
 import re
 import fitz
-from utils import ContentType, CourseMaterialType, prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, get_index_and_client, delete_index, get_padding_length
+from utils import ContentType, CourseMaterialType, prompt_prefix, load_json, stringToBool, write_json_file, write_text_file, info_from_exam_path, process_images, process_context_images, get_index_and_client, delete_index, get_padding_length
 import argparse
 from types import SimpleNamespace
 
@@ -100,7 +100,7 @@ def main():
     else:
         raise RuntimeError(f"server_type {server_type} not implemented.")
 
-    prompt = prompt_prefix(lang=lang, use_course_material=use_course_material)
+    prompt = prompt_prefix(lang=lang, use_course_material=use_course_material, context_content_type=context_content_type)
     exam = load_json(f"exams_json/{exam_name}/{exam_name}_{lang}.json")
 
     exam_out = ''
@@ -123,6 +123,7 @@ def main():
 
             if course_material_type == CourseMaterialType.SLIDES and retrieval_content_type != context_content_type:
                 text_nodes_context = []
+                context_image_paths = []
                 for text_node in text_nodes:
                     filename = text_node.metadata.get("file_name")
 
@@ -137,11 +138,12 @@ def main():
                         raise NotImplementedError("Only support for .pdf and .txt course material files")
                     
                     format_dir = f"{course_material_path}/{exam_name}/format_files"
+                    slide_dir = f"{course_material_path}/{exam_name}/slides"
                     padding_length = get_padding_length(format_dir, lecture_name)
                     page_str_padded = str(page_number).zfill(padding_length)
                                         
                     if context_content_type == ContentType.TEXT:
-                        content_directory = f"{course_material_path}/{exam_name}/slides"
+                        content_directory = slide_dir
 
                         # All slides have PDF file type except TGI
                         if exam_name == "TGI2324":
@@ -184,23 +186,43 @@ def main():
                         text_nodes_context.append(SimpleNamespace(**text_node_dict))
 
                     elif context_content_type == ContentType.IMAGE:
-                        raise NotImplementedError()
-                        # TODO: Read retrieved slides as images
+                        pdf_path = os.path.join(slide_dir, f"{lecture_name}.pdf")
+                        output_dir = os.path.join(course_material_path, exam_name, "context_images")
+                        os.makedirs(output_dir, exist_ok=True)
+
+                        doc = fitz.open(pdf_path)
+                        page = doc.load_page(page_number - 1) 
+                        pix = page.get_pixmap(dpi=300)  
+
+                        output_path = os.path.join(output_dir, f"{lecture_name}-{str(page_number).zfill(padding_length)}.png")
+                        pix.save(output_path)
+
+                        doc.close()
+
+                        context_image_paths.append(output_path)
+
+
                     
             else:
                 text_nodes_context = text_nodes
 
-            context = [
-                {
-                    "Course_Material": text_node.text, 
-                    # This could be used to analyze what material is used to answer questions but may introduce noise
-                    # "Metadata": {
-                    #     "Page": text_node.metadata.get("page_label"), 
-                    #     "Filename": text_node.metadata.get("file_name"), 
-                    # },
-                } 
-                for text_node in text_nodes_context
-            ]
+            if text_nodes_context:
+                context = [
+                    {
+                        "Course_Material": text_node.text, 
+                        # This could be used to analyze what material is used to answer questions but may introduce noise
+                        # "Metadata": {
+                        #     "Page": text_node.metadata.get("page_label"), 
+                        #     "Filename": text_node.metadata.get("file_name"), 
+                        # },
+                    } 
+                    for text_node in text_nodes_context
+                ]
+            elif context_image_paths:
+                context_image_paths_flatten = [re.sub(r".*?(?=context_images/)", "", path) for path in context_image_paths]
+                context = context_image_paths_flatten
+            else:
+                context = []
 
             used_context[question_id] = context
             question = {"Context": context, **question}
@@ -209,7 +231,7 @@ def main():
         out = llm_client.send_request(
             prompt,
             input_body=json.dumps(question),
-            images=process_images(exam_name, question)
+            images=process_images(exam_name, question) + (process_context_images(context_image_paths) or [])
         )
 
         print(f'**** Answer: {out}')
