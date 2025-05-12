@@ -128,7 +128,7 @@ def main():
                     filename = text_node.metadata.get("file_name")
 
                     if filename.endswith(".pdf"):
-                        page_number = text_node.metadata.get("page_label")
+                        page_number = int(text_node.metadata.get("page_label"))
                         lecture_name = os.path.basename(filename).replace(".pdf", "")
                     elif filename.endswith(".txt"):
                         base_filename = os.path.basename(filename)
