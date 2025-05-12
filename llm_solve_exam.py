@@ -186,13 +186,13 @@ def main():
                         text_nodes_context.append(SimpleNamespace(**text_node_dict))
 
                     elif context_content_type == ContentType.IMAGE:
-                        pdf_path = os.path.join(slide_dir, f"{lecture_name}.pdf")
 
                         if exam_name == "TGI2324":
-                            output_dir = os.path.join(course_material_path.replace("slides", "Vorlesungsfolien_o_Klicks"), exam_name, "context_images")
+                            pdf_path = os.path.join(slide_dir.replace("slides", "Vorlesungsfolien_o_Klicks"), f"{lecture_name}.pdf")
                         else:
-                            output_dir = os.path.join(course_material_path, exam_name, "context_images")
+                            pdf_path = os.path.join(slide_dir, f"{lecture_name}.pdf")
 
+                        output_dir = os.path.join(course_material_path, exam_name, "context_images")
                         os.makedirs(output_dir, exist_ok=True)
 
                         doc = fitz.open(pdf_path)
