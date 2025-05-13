@@ -160,6 +160,10 @@ def main():
                         latex_pattern = r"<latexit.*?>.*?<\/latexit>"
                         text = re.sub(latex_pattern, "", text)
 
+                        # text from retrieval removes '\n' if it ends with it
+                        # to make sure we use the exact same context for best comparability, we do that manually as well
+                        text = text.removesuffix('\n')
+
                         text_node_dict = {
                             "text": text, 
                             "metadata": {
@@ -176,6 +180,10 @@ def main():
                         with open(text_path, 'r') as file:
                             text = file.read()
 
+                        # text from retrieval removes '\n' if it ends with it
+                        # to make sure we use the exact same context for best comparability, we do that manually as well
+                        text = text.removesuffix('\n')
+                        
                         text_node_dict = {
                             "text": text, 
                             "metadata": {
