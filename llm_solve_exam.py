@@ -111,6 +111,7 @@ def main():
     for question in exam['Questions']:
         question_id = question.pop("Index")
 
+        context_image_paths = []
         if retriever:
             question_content = question.get("Description", "")
             sub_questions = question.get("Subquestions", [])
@@ -123,7 +124,6 @@ def main():
 
             if course_material_type == CourseMaterialType.SLIDES and retrieval_content_type != context_content_type:
                 text_nodes_context = []
-                context_image_paths = []
                 for text_node in text_nodes:
                     filename = text_node.metadata.get("file_name")
 

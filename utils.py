@@ -351,10 +351,14 @@ def process_images(exam_name, question):
 
 
 def process_context_images(image_paths):
+    if image_paths == []:
+        return []
+    
     images, image_full_paths_flatten = load_images(image_paths)
     image_paths_flatten = [re.sub(r".*?(?=context_images/)", "", path) for path in image_full_paths_flatten]
     image_titles = [f"Figure: {x}" for x in image_paths_flatten]
     images = [add_title(img, title) for img, title in zip(images, image_titles)]
+
     return images
 
 
